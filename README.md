@@ -63,3 +63,31 @@ WCT performs style transfer with arbitrary styles by matching the correlation be
 ### Progressive Stylization
 
 Previous approaches used a multi-level stylization. Here features are progressively transformed within a single forward pass. WCT is sequentially applied at each scale within a single encoder-decoder network. Training procedure is simple and it avoids the errors being amplified due to recursively encoding and decoding the signal in the VGG network.
+
+## Analysis
+
+### Wavelet Pooling
+
+PhotoWCT suffers from loss of spatial information by max-pooling as shown below:
+
+![Image showing the loss of spatial information due to max pooling](Loss_of_spatial_information.png)
+
+Since low frequency components capture textures and high frequency components detect edges, individually applying WCT to these components allows for individual stylization. If the style is only applied to the low frequency components as shown above, the edges remain unchanged. Only using the low frequency component is equivalent to average pooling.
+
+### Ablation Study
+
+The paper compares stylization results using other pooling variants. Split pooling and learnable pooling are studied. Split pooling can carry wole information. Learnable pooling is a trainable convolutional layer and it does not represent content faithfully.
+
+![Comparison of pooling options](pooling.png)
+
+### Unpooling Options
+
+Concatenation was adopted instead of summing to acheive better reconstruction. Four feature components from the corresponding scale and feature output before wavelet pooling are concatenated. This produces better results at the cost of additional parameters. Summing produces a more stylized output while concatenation produces a clearer image.
+
+![Comparison of npooling options](unpooling.png)
+
+### Progressive vs. multi-lelve strategy
+
+Since wavelet pooling and unpooling are invertible operations, a multi-level strategy can be adopted to increase the contrast in the transfered style. This produces more vivid results.
+
+![Comparison of reconstruction techniques](reconstruction.png)
