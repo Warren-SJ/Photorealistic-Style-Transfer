@@ -1,5 +1,7 @@
 # Photorealistic-Style-Transfer
 
+This repository contains a summary of the research paper [Photorealistic Style Transfer via Wavelet Transforms](https://arxiv.org/pdf/1903.09760v2.pdf) by Jaejun Yoo, Youngjung Uh, Sanghyuk Chun, Byeongkyu Kang and Jung-Woo Ha. Additionally it contains a PyTorch implementaion of the model. This was obtained from the official repository by the authors [here](https://github.com/clovaai/WCT2/tree/master). This repository serves as an exploration of the paper by me and is not an official implementation of the paper.
+
 ## Introduction
 
 This research paper focuses on style transfer between two images. Existing methods of style transfer are limited by spatial distortions or unrealistic artifacts. Here, a network architecture that enhances photorealism is introduced. Wavelet corrected transfer is proposed based on whitening and colouring transforms. Additionally, video stylization is also possible.
