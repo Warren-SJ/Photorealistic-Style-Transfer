@@ -91,3 +91,9 @@ Concatenation was adopted instead of summing to acheive better reconstruction. F
 Since wavelet pooling and unpooling are invertible operations, a multi-level strategy can be adopted to increase the contrast in the transfered style. This produces more vivid results.
 
 ![Comparison of reconstruction techniques](reconstruction.png)
+
+## Results
+
+Based on provided results, it is clear the the mew model produces higher quality photorealistic images compared to previous methods. Additionally it produces better results for video stylization. Memory utilization and runtime are also minimal compared to previous approaches.
+
+![Comparison of Results](results.png)
