@@ -1,6 +1,6 @@
 # Photorealistic-Style-Transfer
 
-This repository contains a summary of the research paper [Photorealistic Style Transfer via Wavelet Transforms](https://arxiv.org/pdf/1903.09760v2.pdf) by Jaejun Yoo, Youngjung Uh, Sanghyuk Chun, Byeongkyu Kang and Jung-Woo Ha. Additionally it contains a PyTorch implementaion of the model. This was obtained from the official repository by the authors [here](https://github.com/clovaai/WCT2/tree/master). This repository serves as an exploration of the paper by me and is not an official implementation of the paper.
+This repository contains a summary of the research paper [Photorealistic Style Transfer via Wavelet Transforms](https://arxiv.org/pdf/1903.09760v2.pdf) by Jaejun Yoo, Youngjung Uh, Sanghyuk Chun, Byeongkyu Kang and Jung-Woo Ha. Additionally it contains a PyTorch implementaion of the model. This was obtained from the official repository by the authors [here](https://github.com/clovaai/WCT2/tree/master). This repository serves as an exploration of the paper by me and is not an official implementation of the paper. All pretrained models and weights are obtained from the official repository.
 
 ## Introduction
 
@@ -99,3 +99,19 @@ Since wavelet pooling and unpooling are invertible operations, a multi-level str
 Based on provided results, it is clear the the mew model produces higher quality photorealistic images compared to previous methods. Additionally it produces better results for video stylization. Memory utilization and runtime are also minimal compared to previous approaches.
 
 ![Comparison of Results](results.png)
+
+## Instructions for Use
+
+1. Clone the repository using the following command:
+    ```git clone https://github.com/Warren-SJ/Photorealistic-Style-Transfer.git```
+
+2. Navigate to the cloned directory:
+    ```cd Photorealistic-Style-Transfer```
+
+3. Run the following command to install the required packages:
+    ```pip install -r requirements.txt```
+
+4. Run the following command to start the application:
+    ```python app.py```
+
+5. Follow the instructions in the application to upload your content and style images. The application will then generate the stylized image in the output directory specified.
