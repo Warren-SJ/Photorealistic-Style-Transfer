@@ -26,12 +26,9 @@ class Timer:
             print(self.msg.format(datetime.datetime.now() - self.start_time))
 
 
-def open_image(image_path, image_size=None):
+def open_image(image_path):
     image = Image.open(image_path)
     _transforms = []
-    if image_size is not None:
-        image = transforms.Resize(image_size)(image)
-        # _transforms.append(transforms.Resize(image_size))
     w, h = image.size
     _transforms.append(transforms.CenterCrop((h // 16 * 16, w // 16 * 16)))
     _transforms.append(transforms.ToTensor())
@@ -90,7 +87,7 @@ def load_segment(image_path, image_size=None):
 
 
 def compute_label_info(content_segment, style_segment):
-    if not content_segment.size or not style_segment.size:
+    if content_segment is None or style_segment is None:
         return None, None
     max_label = np.max(content_segment) + 1
     label_set = np.unique(content_segment)
