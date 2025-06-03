@@ -34,6 +34,10 @@ from model import WaveEncoder, WaveDecoder
 from utils.core import feature_wct
 from utils.io import Timer, open_image, load_segment, compute_label_info
 
+import gradio as gr
+from PIL import Image
+import numpy as np
+
 
 IMG_EXTENSIONS = [
     '.jpg', '.JPG', '.jpeg', '.JPEG',
@@ -142,17 +146,37 @@ def stylize(content_path, style_path, output_path):
     print(f"Stylized image saved to {output_path}")
 
 
+def stylize(content_img, style_img, alpha=0.5):
+    device = "cuda:0" if torch.cuda.is_available() else "cpu"
+    content_img = Image.fromarray(np.array(content_img).astype(np.uint8))
+    style_img = Image.fromarray(np.array(style_img).astype(np.uint8))
+    content_img.save("_gr_content.png")
+    style_img.save("_gr_style.png")
+    content = open_image("_gr_content.png").to(device)
+    style = open_image("_gr_style.png").to(device)
+    wct2 = WCT2(device=device, verbose=False)
+    with torch.no_grad():
+        out = wct2.transfer(content, style, alpha=alpha)
+    out_img = out.clamp_(0,1).cpu().squeeze(0)
+    out_img = out_img.permute(1,2,0).numpy()
+    out_img = (out_img * 255).astype(np.uint8)
+    return Image.fromarray(out_img)
+
+
 def main():
-    content_image = input('Enter the path to the content image: ')
-    style_image = input('Enter the path to the style image: ')
-    if not os.path.exists(content_image) or not os.path.exists(style_image):
-        print('Invalid file path(s). Please check the paths and try again.')
-        return
-    output_image = input('Enter the path to save the output image: ')
-    os.makedirs(os.path.dirname(output_image), exist_ok=True)
-    stylize(content_image, style_image, output_image)
-    
+    demo = gr.Interface(
+        fn=stylize,
+        inputs=[
+            gr.Image(type="pil", label="Content Image", elem_id="content_img"),
+            gr.Image(type="pil", label="Style Image", elem_id="style_img"),
+            gr.Slider(0, 1, value=0.5, step=0.01, label="Alpha (Style Strength)")
+        ],
+        outputs=gr.Image(type="pil", label="Stylized Output"),
+        title="Photorealistic Style Transfer",
+        description="Upload a content and a style image to perform photorealistic style transfer. Adjust the alpha slider to control style strength.",
+        allow_flagging="never",
+    )
+    demo.launch()
 
 if __name__ == '__main__':
-    main()
-    
+   main()
