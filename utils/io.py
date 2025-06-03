@@ -26,8 +26,9 @@ class Timer:
             print(self.msg.format(datetime.datetime.now() - self.start_time))
 
 
-def open_image(image_path):
-    image = Image.open(image_path)
+def open_image(image):
+    if isinstance(image, str):
+        image = Image.open(image)
     _transforms = []
     w, h = image.size
     _transforms.append(transforms.CenterCrop((h // 16 * 16, w // 16 * 16)))

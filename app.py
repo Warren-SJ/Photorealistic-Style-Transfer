@@ -23,8 +23,6 @@ THE SOFTWARE.
 # Modifications by Warren Jayakumar, 2025
 
 import os
-import tqdm
-import argparse
 
 import torch
 from torchvision.utils import save_image
@@ -32,7 +30,7 @@ from torchvision.utils import save_image
 from model import WaveEncoder, WaveDecoder
 
 from utils.core import feature_wct
-from utils.io import Timer, open_image, load_segment, compute_label_info
+from utils.io import open_image
 
 import gradio as gr
 from PIL import Image
@@ -108,7 +106,7 @@ class WCT2:
                 self.print_('transfer at encoder {}'.format(level))
         if 'skip' in self.transfer_at:
             for skip_level in wct2_skip_level:
-                for component in [0, 1, 2]:  # component: [LH, HL, HH]
+                for component in [0, 1, 2]:
                     content_skips[skip_level][component] = feature_wct(content_skips[skip_level][component], style_skips[skip_level][component],
                                                                        alpha=alpha, device=self.device)
                 self.print_('transfer at skip {}'.format(skip_level))
@@ -132,7 +130,6 @@ def get_all_transfer():
                     ret.append(_ret)
     return ret
 
-
 def stylize(content_path, style_path, output_path):
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     device = torch.device(device)
@@ -147,13 +144,13 @@ def stylize(content_path, style_path, output_path):
 
 
 def stylize(content_img, style_img, alpha=0.5):
-    device = "cuda:0" if torch.cuda.is_available() else "cpu"
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    if content_img is None or style_img is None:
+        raise ValueError("Both content and style images must be provided.")
     content_img = Image.fromarray(np.array(content_img).astype(np.uint8))
     style_img = Image.fromarray(np.array(style_img).astype(np.uint8))
-    content_img.save("_gr_content.png")
-    style_img.save("_gr_style.png")
-    content = open_image("_gr_content.png").to(device)
-    style = open_image("_gr_style.png").to(device)
+    content = open_image(content_img).to(device)
+    style = open_image(style_img).to(device)
     wct2 = WCT2(device=device, verbose=False)
     with torch.no_grad():
         out = wct2.transfer(content, style, alpha=alpha)
