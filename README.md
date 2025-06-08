@@ -115,3 +115,5 @@ Based on provided results, it is clear the the mew model produces higher quality
     ```python app.py```
 
 5. Follow the instructions in the application to upload your content and style images. The application will then generate the stylized image in the output directory specified.
+
+Note: Requires a CUDA enabled GPU to run.
