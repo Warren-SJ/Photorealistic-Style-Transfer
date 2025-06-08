@@ -143,21 +143,9 @@ def get_all_transfer():
                     ret.append(_ret)
     return ret
 
-def stylize(content_path, style_path, output_path):
-    device = "cpu"
-    device = torch.device(device)
-    content = open_image(content_path).to(device)
-    style   = open_image(style_path).to(device)
-    wct2 = WCT2(device=device, verbose=False)
-    with torch.no_grad():
-        out = wct2.transfer(content, style, alpha=0.5)
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    save_image(out.clamp_(0,1), output_path, padding=0)
-    print(f"Stylized image saved to {output_path}")
-
 
 def stylize(content_img, style_img, alpha=0.5):
-    device =  "cpu"
+    device =  "cuda:0" if torch.cuda.is_available() else "cpu"
     device = torch.device(device)
     if content_img is None or style_img is None:
         raise ValueError("Both content and style images must be provided.")
@@ -190,4 +178,4 @@ def main():
     demo.launch()
 
 if __name__ == '__main__':
-   main()
+    main()
