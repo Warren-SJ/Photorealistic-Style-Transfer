@@ -52,7 +52,7 @@ class WCT2:
 
         script_dir = os.path.dirname(os.path.abspath(__file__))
         model_path = os.path.join(script_dir, 'models')
-        
+        self.device = device
         self.transfer_at = set(transfer_at)
         assert not(self.transfer_at - set(['encoder', 'decoder', 'skip'])), 'invalid transfer_at: {}'.format(transfer_at)
         assert self.transfer_at, 'empty transfer_at'
@@ -61,8 +61,14 @@ class WCT2:
         self.verbose = verbose
         self.encoder = WaveEncoder('cat5').to(self.device)
         self.decoder = WaveDecoder('cat5').to(self.device)
-        self.encoder.load_state_dict(torch.load(os.path.join(model_path, 'wave_encoder.pth'), map_location=lambda storage, loc: storage))
-        self.decoder.load_state_dict(torch.load(os.path.join(model_path, 'wave_decoder.pth'), map_location=lambda storage, loc: storage))
+        encoder_ckpt = torch.load(os.path.join(model_path, 'wave_encoder.pth'), map_location=self.device)
+        for k, v in encoder_ckpt.items():
+            encoder_ckpt[k] = v.clone() if isinstance(v, torch.Tensor) else v
+        self.encoder.load_state_dict(encoder_ckpt)
+        decoder_ckpt = torch.load(os.path.join(model_path, 'wave_decoder.pth'), map_location=self.device)
+        for k, v in decoder_ckpt.items():
+            decoder_ckpt[k] = v.clone() if isinstance(v, torch.Tensor) else v
+        self.decoder.load_state_dict(decoder_ckpt)
 
     def print_(self, msg):
         if self.verbose:
@@ -102,19 +108,26 @@ class WCT2:
             content_feat = self.encode(content_feat, content_skips, level)
             if 'encoder' in self.transfer_at and level in wct2_enc_level:
                 content_feat = feature_wct(content_feat, style_feats['encoder'][level],
-                                           alpha=alpha, device=self.device)
+                                           alpha=alpha, device=self.device).clone()
                 self.print_('transfer at encoder {}'.format(level))
         if 'skip' in self.transfer_at:
             for skip_level in wct2_skip_level:
+                new_skip = []
                 for component in [0, 1, 2]:
-                    content_skips[skip_level][component] = feature_wct(content_skips[skip_level][component], style_skips[skip_level][component],
-                                                                       alpha=alpha, device=self.device)
+                    new_component = feature_wct(
+                        content_skips[skip_level][component].clone(),
+                        style_skips[skip_level][component].clone(),
+                        alpha=alpha, device=self.device
+                    ).clone()
+                    new_skip.append(new_component)
+                content_skips[skip_level] = new_skip
+
                 self.print_('transfer at skip {}'.format(skip_level))
 
         for level in [4, 3, 2, 1]:
             if 'decoder' in self.transfer_at and level in style_feats['decoder'] and level in wct2_dec_level:
                 content_feat = feature_wct(content_feat, style_feats['decoder'][level],
-                                           alpha=alpha, device=self.device)
+                                           alpha=alpha, device=self.device).clone()
                 self.print_('transfer at decoder {}'.format(level))
             content_feat = self.decode(content_feat, content_skips, level)
         return content_feat
@@ -131,7 +144,7 @@ def get_all_transfer():
     return ret
 
 def stylize(content_path, style_path, output_path):
-    device = "cuda:0" if torch.cuda.is_available() else "cpu"
+    device = "cpu"
     device = torch.device(device)
     content = open_image(content_path).to(device)
     style   = open_image(style_path).to(device)
@@ -144,7 +157,8 @@ def stylize(content_path, style_path, output_path):
 
 
 def stylize(content_img, style_img, alpha=0.5):
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device =  "cpu"
+    device = torch.device(device)
     if content_img is None or style_img is None:
         raise ValueError("Both content and style images must be provided.")
     content_img = Image.fromarray(np.array(content_img).astype(np.uint8))
